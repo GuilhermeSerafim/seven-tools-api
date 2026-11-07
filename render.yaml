@@ -1,0 +1,56 @@
+previews:
+  generation: off
+
+databases:
+  - name: seven-tools-db
+    plan: free
+    databaseName: seven_tools
+    user: seven
+
+services:
+  - type: web
+    name: seven-tools-api
+    runtime: python
+    branch: main
+    plan: free
+    autoDeployTrigger: checksPass
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: seven-tools-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://seven-tools.vercel.app
+      - key: CORS_ORIGIN_REGEX
+        value: ""
+      - key: FRONTEND_BASE_URL
+        value: https://seven-tools.vercel.app
+      - key: PASSWORD_RESET_TOKEN_TTL_MINUTES
+        value: "60"
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: EMAIL_FROM
+        value: SEVEN Tools <no-reply@sevendigitais.com>
+      - key: RESEND_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: AI_MODEL
+        value: gpt-4o
+      - key: AI_API_KEY
+        sync: false
+      - key: CLICKUP_API_TOKEN
+        sync: false
+      - key: CLICKUP_CLIENTS_LIST_ID
+        sync: false
+      - key: AI_MAX_TOKENS
+        value: "8192"
+      - key: AI_TEMPERATURE
+        value: "0.3"
+      - key: PYTHON_VERSION
+        value: "3.12.0"

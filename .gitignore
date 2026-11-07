@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Env files
+.env
+*.env
+
+# Testes
+.pytest_cache/
+
+# Build / distribuição
+*.egg-info/
+dist/
+build/
+
+# Outros
+.worktrees/
+# Local configuration and private data
+.env.*
+!.env.example
+.claude/settings.local.json
+.codex-local/
+.playwright-cli/
+*.log
+scripts/seed_collaborators.py
+docs/plans/2026-04-15-seed-colaboradores-force-password.md
+docs/specs/2026-04-15-seed-colaboradores-force-password-design.md

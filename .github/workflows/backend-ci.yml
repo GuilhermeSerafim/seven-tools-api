@@ -1,0 +1,65 @@
+name: backend-ci
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-quality:
+    name: backend-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: seven
+          POSTGRES_PASSWORD: seven_dev
+          POSTGRES_DB: seven_tools_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U seven -d seven_tools_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://seven:seven_dev@localhost:5432/seven_tools_ci
+      DATABASE_URL_TEST: postgresql://seven:seven_dev@localhost:5432/seven_tools_ci
+      SECRET_KEY: ci-secret-key
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      CORS_ORIGIN_REGEX: ""
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run database migrations
+        run: alembic upgrade head
+
+      - name: Run pytest
+        run: pytest -q
